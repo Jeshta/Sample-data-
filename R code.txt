@@ -1,0 +1,425 @@
+setwd("C://Users//ajeshta//Downloads")
+
+getwd()
+
+features <- read.csv("2016-06-01_VS1_Poll.csv",stringsAsFactors = FALSE)
+
+varselected<- features[-c(2,3,4,5,9,10,13,19,20,21,22)]
+
+
+varselected<-varselected[-c(12)]
+
+class(varselected)
+
+unique(varselected$oid)
+
+varselected$office<-substr(varselected$oid,1,3)
+
+varselected$cof<-varselected$office
+
+install.packages("dplyr")
+
+library(dplyr)
+
+varselected1<-varselected[varselected$ctx == 1,]
+context1data<-varselected1
+context1data<-context1data[-c(9,10)]
+
+context1data$mktcarrier1<-ifelse(context1data$carrier==context1data$mktcarrier,1,0)
+
+
+unique(context1data$mktcarrier1)
+
+#Rename columns
+
+context1data <- rename(context1data, c("mktcarrier1" = "carrier&Mktcarrier"))
+
+context1data$carrierMktcarrier <- context1data$mktcarrier1
+context1data$mktcarrier1 <- NULL
+
+context1data$country <- context1data$office
+context1data$office<-NULL
+
+context1data$office<- context1data$country
+
+unique(context1data$country)
+
+#Country(Board),Country(Off),	Country(GB),ROW
+
+#VS1 --london - EWR
+context1data$countryoff<-NULL
+
+
+write.csv(context1data, "context1dataout.csv")
+
+#context1data$countryboard<-ifelse(context1data$country=='LON','BHX',MAN,LTN,LPL')
+
+#if LON,BHX,MAN,LTN,LPL --England
+# if NYC,LAX,EWR,"PHL",SEA,DCA", "ALB" ,CHI, "SFO",LGA,FLL,PVD",DTW,MIA,"ATL","LAS","DFW",SHV ---United sates
+#if Mil, "PAR",BER,AMS,"MAD",STO,"OSL,GVA,"DEL",SYD,DXB,LOS,AKL,IXC,NAG","PNQ","ORK",HAJ,BTS,TRN","QJU,"CPH",TYO,YTO,"ZRH",AMD,
+#"ATH","SNN","DUB",MEL,"SKG", "PHC",QAR,BOM,NUE,SAO,"WLG" ,"RTM" ,TLV,MOW,AMM,HFA",PWM,"KHI",KUL,YKX,HEL,CMB,KRK,BLR,SHJ
+
+#context1data$row
+
+
+
+context1data$office<-sub('LON', replacement, input)
+
+#######################
+featureselection<-read.csv("context1dataoutedit.csv",stringsAsFactors = FALSE)
+unique(featureselection$OTA)
+#dummy variable creation
+featureselection1 <- model.matrix(~Country-1, featureselection)
+colnames(featureselection1) <- gsub("Country","",colnames(featureselection1))
+
+
+result <- cbind(featureselection, featureselection1)
+result
+
+#remove col 13
+
+dataset1<-dataset1[-c(1,2,8)]
+str(dataset1)
+unique(dataset1$matchlevel)
+summary(dataset1$matchlevel)
+################################
+
+which(is.na(dataset1$matchlevel)) #12 missing values in cache age and match level (Removed as it is dirty data)
+which(is.na(dataset1$cacheage))
+
+
+#is.na(airquality$Ozone)
+dataset1[is.na(dataset1$matchlevel),c("cacheage","matchlevel")]
+
+#airquality <- airquality[!is.na(airquality$Ozone),]
+#airquality<-airquality[!is.na(airquality$Ozone) & !is.na(airquality$Solar.R),]
+dataset1<-dataset1[!is.na(dataset1$matchlevel),]
+
+summary(dataset1)
+
+
+#12 missing values in match level
+write.csv(dataset1, "dataset1edit.csv")
+dataset1<-dataset1[-c(1)]
+
+
+dataset1 <- read.csv("dataset1edit.CSV",stringsAsFactors = FALSE)
+
+##################
+#mean(x, na.rm=TRUE) # returns 2
+#mydata$v1[mydata$v1==99] <- NA
+#newdata <- na.omit(mydata)
+#which(is.na(dataset1), arr.ind=TRUE)
+###################
+
+unique(dataset1$classes)
+unique(features$classes)
+
+length(dataset1$classes)
+max(nchar(dataset1$classes))
+min(nchar(dataset1$classes))
+##################
+
+
+#termdoc matrix
+
+termdoc
+install.packages("tm")
+library(tm)
+
+show(tdm)
+class(tdm)
+
+class_corpus = Corpus(VectorSource(termdoc$classes))
+class(class_corpus)
+inspect(class_corpus[1])
+
+tdm <- TermDocumentMatrix(class_corpus)
+inspect(tdm)
+
+
+dtm <- DocumentTermMatrix(class_corpus)
+inspect(dtm)
+
+tdm.df<-as.data.frame(dtm)
+
+################
+
+termdoc<-as.data.frame(termdoc)
+class(termdoc)
+#termdoc.list <- as.list(as.data.frame(t(termdoc)))
+#class(termdoc.list)
+m <- list(ID = "ctx", Content = "classes")
+myReader <- readTabular(mapping = m)
+mycorpus <- Corpus(DataframeSource(termdoc), readerControl = list(reader = myReader))
+
+
+for (i in 1:length(mycorpus)) {
+  attr(mycorpus[[i]], "ctx") <- termdoc$ctx[i]
+}
+#completed creating a corpus
+###########################
+#Create a term document matrix and append to data frame
+
+#######################
+
+
+
+
+dataset1 <- read.csv("dataset1edit.CSV",stringsAsFactors = FALSE)
+nchar(dataset1$classes)
+str(dataset1)
+table(dataset1$Country)
+table(dataset1$Country,dataset1$office)
+
+y<-boxplot(dataset1$cacheage)
+
+
+colSums(is.na(dataset1))
+
+index<-which(is.na(dataset1$cacheage))
+dataset1<-dataset1[-index,]
+
+
+
+str(dataset1$classes)
+nchar(dataset1$classes)
+install.packages("sqldf")
+library(sqldf)
+
+
+dataset1<-subset(dataset1, nchar(as.character(classes)) == 42)
+
+
+write.csv(dataset1, "dataset1editcopy.csv")
+dataset1 <- read.csv("dataset1editcopy.csv",stringsAsFactors = FALSE)
+
+dataset1cp<-sqldf("select * from dataset1")
+
+sqldf("select count(*) from dataset1 where OTA like '%EX%'") #28317
+
+sqldf("select count(*) from dataset1 where OTA like '%EX37BA%'") #27743
+
+sqldf("select count(*) from dataset1 where OTA like '%EX37BA%' and office like '%LON%'")
+
+
+dataset1<-transform(dataset1, officeid=paste(office, OTA, sep=""))
+
+dataset1<-dataset1[-c(1)]
+
+table(dataset1$officeid1)
+
+table(dataset1$office)
+
+dataset1$officeid1<-substr(dataset1$officeid,start=1, stop=6) 
+
+table(dataset1$country,dataset1$officeid1)
+
+
+table(dataset1$country,dataset1$office)
+# check for outliers.
+x<-boxplot(dataset1$cacheage)
+x$out
+
+library(sqldf)
+sqldf("select office from dataset1 where England==1")
+
+########
+modeldataout
+
+modeldata<-dataset1[c(2,3,4,5,6,9:32)]
+
+class(modeldata)
+str(modeldata)
+modeldata$O <- as.numeric(as.character(modeldata$O))
+colSums(is.na(modeldata))
+modeldata<- na.omit(modeldata)
+
+str(modeldata)
+
+
+modeldata[1:13] <- lapply(modeldata[1:13], as.numeric)
+
+
+summary(modeldata$matchlevel) #always -==0
+summary(modeldata$carrierMktcarrier)
+
+
+##Scale the data
+
+modeldata.scaled <- scale(modeldata[-c(1,4,5)])
+
+modeldata.scaled1<-scale(modeldata[-c(1,4,5)])
+
+##Determine the number of cluster
+
+set.seed(123)
+# Compute and plot wss for k = 2 to k = 15
+k.max <- 15 # Maximal number of clusters
+data <- modeldata.scaled1
+wss <- sapply(1:k.max, 
+              function(k){kmeans(data, k, nstart=10 )$tot.withinss})
+plot(1:k.max, wss,
+     type="b", pch = 19, frame = FALSE, 
+     xlab="Number of clusters K",
+     ylab="Total within-clusters sum of squares")
+abline(v = 3, lty =2)
+
+###############
+
+
+k<-kmeans(modeldata.scaled,2)
+
+k$cluster
+
+install.packages("ggplot2")
+library(ggplot2)
+install.packages("factoextra")
+library("factoextra")
+fviz_cluster(k, data = modeldata.scaled, geom = "point",stand = FALSE, frame.type = "norm")
+
+
+
+
+###debugging error
+
+write.csv(modeldata, "modeldataout.csv")
+32414
+
+x<-modeldata[c(32414)]
+
+
+
+index<-which(is.na(modeldata$H))
+modeldata<-modeldata[-index,]
+######################
+
+
+summary(modeldata)
+
+
+###########################################################################
+
+Modelling
+
+###############################################################################
+
+setwd("C://Users//ajeshta//Downloads")
+modeldata <- read.csv("modeldataout.csv")
+
+index<-which(is.na(modeldata$H))
+modeldata<-modeldata[-index,]
+
+modeldata<-modeldata[c(-1)]
+modeldata.scaled <- scale(modeldata[-c(1,4,5)])
+modeldata.scaled
+set.seed(123)
+
+
+k.max <- 15 # Maximal number of clusters
+data <- modeldata.scaled
+wss <- sapply(1:k.max, 
+              function(k){kmeans(data, k, nstart=10 )$tot.withinss})
+plot(1:k.max, wss,
+     type="b", pch = 19, frame = FALSE, 
+     xlab="Number of clusters K",
+     ylab="Total within-clusters sum of squares")
+abline(v = 3, lty =2)
+
+
+k<-kmeans(modeldata.scaled,3)
+
+install.packages("factoextra")
+library("factoextra")
+
+fviz_cluster(k, data = modeldata.scaled, geom = "point",stand = FALSE, frame.type = "norm")
+
+
+###########################################
+
+##Try without scaling
+
+modeldata1 <- read.csv("modeldataout.csv")
+
+index<-which(is.na(modeldata1$H))
+modeldata1<-modeldata1[-index,]0
+
+modeldata1<-modeldata1[c(-1)]
+modeldata1<-modeldata1[-c(1,4,5)]
+
+set.seed(123)
+
+## No. of clusters
+k.max <- 15 # Maximal number of clusters
+data <- modeldata1
+wss <- sapply(1:k.max, 
+              function(k){kmeans(data, k, nstart=10 )$tot.withinss})
+plot(1:k.max, wss,
+     type="b", pch = 19, frame = FALSE, 
+     xlab="Number of clusters K",
+     ylab="Total within-clusters sum of squares")
+abline(v = 3, lty =2)
+
+
+k<-kmeans(modeldata.scaled,3)
+
+install.packages("factoextra")
+library("factoextra")
+
+fviz_cluster(k, data = modeldata.scaled, geom = "point",stand = FALSE, frame.type = "norm")
+
+
+dataset1 <- read.csv("dataset1edit.CSV")
+
+
+############################################
+k
+
+clusternum<-k$cluster
+
+clusternum<-as.data.frame(clusternum)
+
+modeldata <-cbind(k$cluster,modeldata)
+summary(modeldata$cl)
+
+
+total <- cbind(modeldata, clusternum)
+
+install.packages("sqldf")
+library(sqldf)
+
+totalcl1<-sqldf("select * from total where clusternum=1" )
+
+totalcl2<-sqldf("select * from total where clusternum=2" )
+
+totalcl3<-sqldf("select * from total where clusternum=3" )
+
+
+###################
+
+table(totalcl1$US)
+#Whenever we getan OTA request from the officeid that is from us (country(board)) ie;whenever country(board) matches
+#it falls into a seperate segment
+
+
+table(totalcl2$England)
+#Whenever we getan OTA request from the officeid that is from England(country(board)) ie;whenever country(board) matches
+#it falls into a seperate segment
+
+table(totalcl3$ROW)
+#Whenever we get an OTA request from the officeid that is from ROW ,then there are high chances that it falls into seperate segment
+
+table(total$clusternum)
+
+##############################
+k
+
+k$iter
+k$centers
+
+k$tot.withinss
+
+k$betweenss
+k$size
+k$cluster
+k$cluster
