@@ -1,0 +1,88 @@
+Cdatasetsbk
+
+
+cbctx1<-sqldf("select * from Cdatasetsbktrain where countryBoard =1 and ctx=1")
+
+cbctx2<-sqldf("select * from Cdatasetsbktrain where countryBoard =1 and ctx=2")
+cbctx3<-sqldf("select * from Cdatasetsbktrain where countryBoard =1 and ctx=3")
+
+countryboarddata<-rbind(cbctx1,cbctx2,cbctx3)
+
+nrow(countryboarddata) #50
+
+nrow(cbctx1) #13
+nrow(cbctx2) #27
+nrow(cbctx3) #10
+
+#Modelling
+
+#Build HClustering
+
+#Scale
+
+countryboarddata.scale <- scale(countryboarddata)
+
+# Dissimilarity matrix
+dm <- dist(countryboarddata.scale, method = "euclidean")
+#########
+
+hclustercbdata <- hclust(dm, method = "complete" ) 
+
+hclustercbdata2 <- hclust(dm, method = "ward.D2" )
+
+plot(hclustercbdata2)
+
+plot(hclustercbdata)
+
+
+################################################
+
+CDatasets #504 observations
+
+
+cntbctx1<-sqldf("select * from CDatasets where countryBoard =1 and ctx=1")
+
+cntbctx2<-sqldf("select * from CDatasets where countryBoard =1 and ctx=2")
+cntbctx3<-sqldf("select * from CDatasets where countryBoard =1 and ctx=3")
+
+
+countryboarddataset504obs<-rbind(cntbctx1,cntbctx2,cntbctx3)
+
+nrow(countryboarddataset504obs) #157
+
+
+#Modelling
+
+#Build HClustering
+
+#Scale
+
+countryboarddataset504obs.scale <- scale(countryboarddataset504obs)
+
+# Dissimilarity matrix
+dm1 <- dist(countryboarddataset504obs.scale, method = "euclidean")
+#########
+
+hclustercbdata1 <- hclust(dm1, method = "complete" ) 
+
+hclustercbdata2 <- hclust(dm1, method = "ward.D2")
+
+plot(hclustercbdata2)
+
+######################
+
+
+##Determine the number of cluster#3
+
+grp <- cutree(hclustercbdata, k = 3)
+
+
+table(grp)
+
+# Get the names for the members of cluster 1
+rownames(countryboarddata)[grp == 1]
+
+plot(hclustercbdata, cex = 0.6)
+rect.hclust(hclustercbdata, k = 3, border = 2:5)
+
+
